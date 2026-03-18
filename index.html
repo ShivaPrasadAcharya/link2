@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="ne" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Legal Resources · कानूनी स्रोतहरू</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Devanagari:wght@300;400;600;700&family=Cinzel:wght@400;600;700&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
+<style>
+  /* ══════════════════════════════════════════
+     THEME TOKENS
+  ══════════════════════════════════════════ */
+  :root[data-theme="dark"] {
+    --bg-deep:      #080c12;
+    --bg-card:      #0d1420;
+    --bg-header:    rgba(8,12,18,0.93);
+    --border:       #1e2d45;
+    --border-lit:   #2e4a6e;
+    --gold:         #c9a84c;
+    --gold-dim:     #7a5e28;
+    --teal:         #2dd4bf;
+    --teal-dim:     #134e4a;
+    --text-pri:     #e8dfc8;
+    --text-sec:     #8a9ab5;
+    --text-dim:     #4a5568;
+    --mark-bg:      #c9a84c;
+    --mark-cur:     #e05a2b;
+    --mark-text:    #080c12;
+    --shadow:       0 8px 32px rgba(0,0,0,0.6);
+    --grad-a:       rgba(201,168,76,0.06);
+    --grad-b:       rgba(45,212,191,0.04);
+    --card-shine:   rgba(201,168,76,0.03);
+    --toggle-track: #1e2d45;
+    --toggle-knob:  #c9a84c;
+  }
+
+  :root[data-theme="light"] {
+    --bg-deep:      #f5f0e8;
+    --bg-card:      #ffffff;
+    --bg-header:    rgba(245,240,232,0.95);
+    --border:       #d6cbb8;
+    --border-lit:   #b09870;
+    --gold:         #7a5410;
+    --gold-dim:     #c9a84c;
+    --teal:         #0d7a6e;
+    --teal-dim:     #a7d8d3;
+    --text-pri:     #2a2015;
+    --text-sec:     #5a4e3a;
+    --text-dim:     #9a8e7a;
+    --mark-bg:      #f5d36e;
+    --mark-cur:     #e05a2b;
+    --mark-text:    #2a2015;
+    --shadow:       0 4px 20px rgba(0,0,0,0.10);
+    --grad-a:       rgba(138,97,32,0.05);
+    --grad-b:       rgba(13,122,110,0.04);
+    --card-shine:   rgba(201,168,76,0.04);
+    --toggle-track: #d6cbb8;
+    --toggle-knob:  #7a5410;
+  }
+
+  /* ══════════════════════════════════════════
+     BASE
+  ══════════════════════════════════════════ */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg-deep);
+    color: var(--text-pri);
+    font-family: 'Noto Serif Devanagari', Georgia, serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    transition: background .3s, color .3s;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 20% -10%, var(--grad-a) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 110%, var(--grad-b) 0%, transparent 60%);
+  }
+
+  /* ══════════════════════════════════════════
+     HEADER
+  ══════════════════════════════════════════ */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg-header);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 clamp(1rem, 4vw, 3rem);
+    transition: background .3s, border-color .3s;
+  }
+
+  .header-inner {
+    max-width: 760px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: 68px;
+  }
+
+  .logo {
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: .12em;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: color .3s;
+  }
+  .logo span {
+    font-family: 'Noto Serif Devanagari', serif;
+    font-size: .78rem;
+    color: var(--text-sec);
+    font-weight: 300;
+    display: block;
+    letter-spacing: .05em;
+    transition: color .3s;
+  }
+
+  /* ── THEME TOGGLE BUTTON ── */
+  .theme-toggle {
+    flex-shrink: 0;
+    position: relative;
+    width: 54px;
+    height: 28px;
+    border-radius: 14px;
+    background: var(--toggle-track);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    outline: none;
+    transition: background .3s, border-color .3s;
+  }
+  .theme-toggle:focus-visible {
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.35);
+  }
+  /* sliding knob */
+  .theme-toggle::before {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--toggle-knob);
+    transition: transform .28s cubic-bezier(.4,0,.2,1), background .3s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+  }
+  [data-theme="light"] .theme-toggle::before {
+    transform: translateX(25px);
+  }
+  /* sun / moon icons */
+  .theme-toggle .t-icons {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 5px;
+    font-size: .62rem;
+    pointer-events: none;
+    line-height: 1;
+    color: var(--text-dim);
+    transition: color .3s;
+  }
+
+  /* ── SEARCH WRAP ── */
+  .search-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+  }
+
+  .search-row {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: .45rem .75rem;
+    transition: border-color .2s, box-shadow .2s, background .3s;
+  }
+  .search-row:focus-within {
+    border-color: var(--gold-dim);
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+  }
+
+  .search-icon { color: var(--text-dim); font-size: 1rem; flex-shrink: 0; transition: color .3s; }
+
+  #searchInput {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-pri);
+    font-family: 'Noto Serif Devanagari', serif;
+    font-size: .95rem;
+    caret-color: var(--gold);
+    transition: color .3s;
+  }
+  #searchInput::placeholder { color: var(--text-dim); }
+
+  .search-meta {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    flex-wrap: wrap;
+  }
+
+  .match-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+    color: var(--teal);
+    white-space: nowrap;
+    min-width: 64px;
+    transition: color .3s;
+  }
+
+  .nav-btns { display: flex; gap: .25rem; }
+
+  .nav-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-sec);
+    width: 28px; height: 28px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: .75rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .15s;
+  }
+  .nav-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+  .nav-btn:disabled { opacity: .3; cursor: default; }
+
+  .norm-label {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    cursor: pointer;
+    font-size: .75rem;
+    color: var(--text-sec);
+    white-space: nowrap;
+    user-select: none;
+    padding: .22rem .55rem;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    transition: all .2s;
+  }
+  .norm-label:hover { border-color: var(--teal-dim); color: var(--teal); }
+  .norm-label input { accent-color: var(--teal); width: 13px; height: 13px; }
+  .norm-label.active {
+    border-color: var(--teal);
+    color: var(--teal);
+    background: rgba(45,212,191,0.07);
+  }
+
+  /* ══════════════════════════════════════════
+     MAIN / CARDS  — single column always
+  ══════════════════════════════════════════ */
+  main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 2rem clamp(1rem, 4vw, 3rem) 4rem;
+  }
+
+  .section-title {
+    font-family: 'Cinzel', serif;
+    font-size: .68rem;
+    letter-spacing: .22em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 1.4rem;
+    padding-bottom: .5rem;
+    border-bottom: 1px solid var(--border);
+    transition: color .3s, border-color .3s;
+  }
+
+  .card-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 3px solid transparent;
+    border-radius: 12px;
+    padding: 1.4rem 1.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: .65rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color .25s, border-left-color .25s, box-shadow .25s,
+                transform .2s, background .3s;
+    animation: fadeUp .5s ease both;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--card-shine) 0%, transparent 55%);
+    pointer-events: none;
+    border-radius: inherit;
+    transition: background .3s;
+  }
+
+  .card:hover {
+    border-color: var(--border-lit);
+    border-left-color: var(--gold);
+    box-shadow: var(--shadow);
+    transform: translateX(3px);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .card-title-link {
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--gold);
+    text-decoration: none;
+    letter-spacing: .04em;
+    line-height: 1.45;
+    transition: color .2s, text-shadow .2s;
+  }
+  .card-title-link:hover {
+    color: var(--gold-dim);
+    text-shadow: 0 0 14px rgba(201,168,76,0.3);
+  }
+
+  .edit-link {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .65rem;
+    color: var(--text-dim);
+    text-decoration: none;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: .22rem .55rem;
+    transition: all .2s;
+    letter-spacing: .04em;
+  }
+  .edit-link:hover { color: var(--teal); border-color: var(--teal-dim); }
+
+  .card-desc {
+    font-size: .9rem;
+    color: var(--text-sec);
+    line-height: 1.75;
+    font-family: 'Noto Serif Devanagari', serif;
+    transition: color .3s;
+  }
+
+  .card-url {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .68rem;
+    color: var(--text-dim);
+    word-break: break-all;
+    transition: color .3s;
+  }
+
+  .card.hidden { display: none; }
+
+  /* ── HIGHLIGHTS ── */
+  mark.hl {
+    background: var(--mark-bg);
+    color: var(--mark-text);
+    border-radius: 2px;
+    padding: 0 1px;
+    font-style: normal;
+    transition: background .3s;
+  }
+  mark.hl.current {
+    background: var(--mark-cur);
+    color: #fff;
+    box-shadow: 0 0 0 2px rgba(224,90,43,0.4);
+  }
+
+  /* ── NO RESULTS ── */
+  .no-results {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-dim);
+    font-size: .9rem;
+    display: none;
+    transition: color .3s;
+  }
+  .no-results.visible { display: block; }
+
+  /* ══════════════════════════════════════════
+     FOOTER
+  ══════════════════════════════════════════ */
+  footer {
+    text-align: center;
+    padding: 2rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .64rem;
+    color: var(--text-dim);
+    letter-spacing: .1em;
+    border-top: 1px solid var(--border);
+    transition: color .3s, border-color .3s;
+  }
+
+  /* ══════════════════════════════════════════
+     ANIMATIONS
+  ══════════════════════════════════════════ */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .card:nth-child(1) { animation-delay: .05s; }
+  .card:nth-child(2) { animation-delay: .14s; }
+  .card:nth-child(3) { animation-delay: .23s; }
+  .card:nth-child(4) { animation-delay: .32s; }
+  .card:nth-child(5) { animation-delay: .41s; }
+
+  /* ══════════════════════════════════════════
+     RESPONSIVE
+  ══════════════════════════════════════════ */
+  @media (max-width: 520px) {
+    .header-inner { flex-wrap: wrap; height: auto; padding: .75rem 0; gap: .6rem; }
+    .logo { order: 1; }
+    .theme-toggle { order: 2; margin-left: auto; }
+    .search-wrap { order: 3; width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      LEX PORTAL
+      <span>कानूनी स्रोत संग्रह</span>
+    </div>
+
+    <div class="search-wrap">
+      <div class="search-row">
+        <span class="search-icon">⌕</span>
+        <input type="text" id="searchInput"
+               placeholder="Search titles, descriptions… खोज्नुहोस्"
+               autocomplete="off" spellcheck="false" />
+      </div>
+      <div class="search-meta">
+        <span class="match-count" id="matchCount"></span>
+        <div class="nav-btns">
+          <button class="nav-btn" id="prevBtn" title="Previous match (Shift+Enter)" disabled>▲</button>
+          <button class="nav-btn" id="nextBtn" title="Next match (Enter)" disabled>▼</button>
+        </div>
+        <label class="norm-label" id="normLabel"
+               title="Nepali normalized search — handles vowel/sibilant/nasal variants">
+          <input type="checkbox" id="normCheck" />
+          नेपाली Normalize
+        </label>
+      </div>
+    </div>
+
+    <!-- Light / Dark toggle -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode">
+      <span class="t-icons"><span>☀</span><span>☾</span></span>
+    </button>
+  </div>
+</header>
+
+<main>
+  <div class="section-title">Legal &amp; Constitutional Resources · कानूनी तथा संवैधानिक स्रोतहरू</div>
+  <div class="card-grid" id="cardGrid"></div>
+  <div class="no-results" id="noResults">No matching resources found · कुनै मिल्दो स्रोत भेटिएन</div>
+</main>
+
+<footer>LEX PORTAL · कानूनी स्रोत संग्रह · © 2025</footer>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────
+const LINKS = [
+  {
+    url:      "https://shivaprasadacharya.github.io/magfaram.git.io/",
+    title:    "Mag Faram · माग फारम",
+    editUrl:  "https://github.com/ShivaPrasadAcharya/magfaram.git.io/edit/main/data.js",
+    description: "माग फारम, सर्वोच्च अदालत, pams"
+  },
+  {
+    url:      "https://shivaprasadacharya.github.io/constitution.git.io/",
+    title:    "CONSTITUTION · संविधान",
+    editUrl:  "https://github.com/ShivaPrasadAcharya/constitution.git.io/blob/main/index.html",
+    description: "Complete constitution (in Nepali) with few footnotes · पूर्ण संविधान केही फुटनोट सहित"
+  },
+  {
+    url:      "https://shivaprasadacharya.github.io/constitutionarticleonly.git.io/",
+    title:    "CONSTITUTION ARTICLES ONLY",
+    editUrl:  "https://github.com/ShivaPrasadAcharya/constitutionarticleonly.git.io/blob/main/index.html",
+    description: "Constitution articles only — in Nepali only · केवल धारा मात्र (नेपालीमा)"
+  }
+];
+
+// ── NEPALI NORMALIZER ─────────────────────────────────────────────────────
+const NepaliNormalizer = {
+  vowelMap:    { 'ी': 'ि', 'ू': 'ु' },
+  sibilantMap: { 'श': 'स', 'ष': 'स' },
+  nasalMap:    { 'ङ': 'न', 'ण': 'न', 'ञ': 'न', 'ं': 'न्' },
+  vaBaMap:     { 'व': 'ब' },
+  numberMap:   { '०':'0','१':'1','२':'2','३':'3','४':'4','५':'5','६':'6','७':'7','८':'8','९':'9' },
+  normalize(text) {
+    if (!text) return '';
+    let n = text.normalize('NFC').replace(/\u200D/g,'').replace(/\u200C/g,'');
+    for (const [f,t] of Object.entries(this.vowelMap))    n = n.split(f).join(t);
+    for (const [f,t] of Object.entries(this.sibilantMap)) n = n.split(f).join(t);
+    for (const [f,t] of Object.entries(this.nasalMap))    n = n.split(f).join(t);
+    for (const [f,t] of Object.entries(this.vaBaMap))     n = n.split(f).join(t);
+    for (const [f,t] of Object.entries(this.numberMap))   n = n.split(f).join(t);
+    return n;
+  },
+  isDevanagari(text) { return /[\u0900-\u097F]/.test(text); },
+  mapToOriginal(normPos, original, normalized) {
+    if (normPos <= 0) return 0;
+    if (normPos >= normalized.length) return original.length;
+    let origIdx = 0, normIdx = 0;
+    while (normIdx < normPos && origIdx < original.length) {
+      if (original[origIdx] === '\u200D' || original[origIdx] === '\u200C') { origIdx++; continue; }
+      origIdx++; normIdx++;
+    }
+    while (origIdx < original.length &&
+           (original[origIdx] === '\u200D' || original[origIdx] === '\u200C')) origIdx++;
+    return origIdx;
+  }
+};
+
+// ── THEME TOGGLE ──────────────────────────────────────────────────────────
+const html      = document.documentElement;
+const themeBtn  = document.getElementById('themeToggle');
+
+// Restore saved preference (default dark)
+html.setAttribute('data-theme', localStorage.getItem('lexpTheme') || 'dark');
+
+themeBtn.addEventListener('click', () => {
+  const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  localStorage.setItem('lexpTheme', next);
+});
+
+// ── DOM REFS ──────────────────────────────────────────────────────────────
+const grid     = document.getElementById('cardGrid');
+const noRes    = document.getElementById('noResults');
+const countEl  = document.getElementById('matchCount');
+const prevBtn  = document.getElementById('prevBtn');
+const nextBtn  = document.getElementById('nextBtn');
+const normChk  = document.getElementById('normCheck');
+const normLbl  = document.getElementById('normLabel');
+const searchEl = document.getElementById('searchInput');
+
+// ── HELPERS ───────────────────────────────────────────────────────────────
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── BUILD CARDS ───────────────────────────────────────────────────────────
+const cardEls = [];
+
+LINKS.forEach((item, i) => {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.dataset.idx = i;
+  card.innerHTML = `
+    <div class="card-header">
+      <a class="card-title-link" href="${item.url}" target="_blank" rel="noopener">${escHtml(item.title)}</a>
+      <a class="edit-link" href="${item.editUrl}" target="_blank" rel="noopener">✎ edit</a>
+    </div>
+    <div class="card-desc">${escHtml(item.description)}</div>
+    <div class="card-url">${escHtml(item.url)}</div>
+  `;
+  grid.appendChild(card);
+  cardEls.push({
+    card,
+    fields: {
+      title: card.querySelector('.card-title-link'),
+      desc:  card.querySelector('.card-desc'),
+      url:   card.querySelector('.card-url'),
+    },
+    origText: { title: item.title, desc: item.description, url: item.url }
+  });
+});
+
+// ── SEARCH STATE ──────────────────────────────────────────────────────────
+let allMarks = [];
+let curMark  = -1;
+
+// ── CORE SEARCH ───────────────────────────────────────────────────────────
+function doSearch() {
+  const raw     = searchEl.value;
+  const useNorm = normChk.checked;
+
+  restoreAll();
+  allMarks = [];
+  curMark  = -1;
+
+  if (!raw.trim()) { updateUI(); return; }
+
+  const query = useNorm
+    ? NepaliNormalizer.normalize(raw.toLowerCase())
+    : raw.toLowerCase();
+
+  let totalVisible = 0;
+
+  cardEls.forEach(({ card, fields, origText }) => {
+    const combined     = Object.values(origText).join(' ').toLowerCase();
+    const combinedNorm = useNorm ? NepaliNormalizer.normalize(combined) : combined;
+
+    if (!combinedNorm.includes(query)) {
+      card.classList.add('hidden');
+      return;
+    }
+
+    card.classList.remove('hidden');
+    totalVisible++;
+
+    Object.entries(fields).forEach(([key, el]) => {
+      el.innerHTML = buildHighlights(origText[key], query, useNorm);
+    });
+
+    card.querySelectorAll('mark.hl').forEach(m => allMarks.push(m));
+  });
+
+  noRes.classList.toggle('visible', totalVisible === 0);
+
+  if (allMarks.length > 0) { curMark = 0; scrollToMark(0); }
+  updateUI();
+}
+
+function buildHighlights(original, normQuery, useNorm) {
+  if (!normQuery) return escHtml(original);
+
+  const normalized = useNorm
+    ? NepaliNormalizer.normalize(original.toLowerCase())
+    : original.toLowerCase();
+  const qLen = normQuery.length;
+  let result = '', searchPos = 0, origPos = 0;
+
+  while (searchPos <= normalized.length - qLen) {
+    const idx = normalized.indexOf(normQuery, searchPos);
+    if (idx === -1) break;
+
+    const origStart = useNorm
+      ? NepaliNormalizer.mapToOriginal(idx, original, normalized) : idx;
+    const origEnd = useNorm
+      ? NepaliNormalizer.mapToOriginal(idx + qLen, original, normalized) : idx + qLen;
+
+    result += escHtml(original.slice(origPos, origStart));
+    result += `<mark class="hl">${escHtml(original.slice(origStart, origEnd))}</mark>`;
+    origPos   = origEnd;
+    searchPos = idx + qLen;
+  }
+  result += escHtml(original.slice(origPos));
+  return result;
+}
+
+function restoreAll() {
+  cardEls.forEach(({ card, fields, origText }) => {
+    card.classList.remove('hidden');
+    Object.entries(fields).forEach(([key, el]) => {
+      el.innerHTML = escHtml(origText[key]);
+    });
+  });
+  noRes.classList.remove('visible');
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────
+function scrollToMark(idx) {
+  if (idx < 0 || idx >= allMarks.length) return;
+  allMarks.forEach((m, i) => m.classList.toggle('current', i === idx));
+  allMarks[idx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function updateUI() {
+  const total = allMarks.length;
+  const q     = searchEl.value.trim();
+  countEl.textContent = !q ? '' : total === 0 ? '0 matches' : `${curMark + 1} / ${total}`;
+  prevBtn.disabled = total < 2;
+  nextBtn.disabled = total < 2;
+}
+
+prevBtn.addEventListener('click', () => {
+  if (!allMarks.length) return;
+  curMark = (curMark - 1 + allMarks.length) % allMarks.length;
+  scrollToMark(curMark); updateUI();
+});
+
+nextBtn.addEventListener('click', () => {
+  if (!allMarks.length) return;
+  curMark = (curMark + 1) % allMarks.length;
+  scrollToMark(curMark); updateUI();
+});
+
+searchEl.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.shiftKey ? prevBtn.click() : nextBtn.click(); }
+  if (e.key === 'Escape') { searchEl.value = ''; doSearch(); }
+});
+
+let debTimer;
+searchEl.addEventListener('input', () => {
+  clearTimeout(debTimer);
+  debTimer = setTimeout(doSearch, 160);
+});
+
+normChk.addEventListener('change', () => {
+  normLbl.classList.toggle('active', normChk.checked);
+  doSearch();
+});
+</script>
+</body>
+</html>
