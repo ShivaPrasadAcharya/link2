@@ -279,6 +279,17 @@
     transition: color .3s, border-color .3s;
   }
 
+  .edit-icon {
+    color: var(--gold);
+    text-decoration: none;
+    margin-left: 0.5rem;
+    font-size: 0.8rem;
+    transition: color .3s;
+  }
+  .edit-icon:hover {
+    color: var(--gold-dim);
+  }
+
   .card-grid {
     display: flex;
     flex-direction: column;
@@ -477,7 +488,7 @@
 </header>
 
 <main>
-  <div class="section-title">Legal &amp; Constitutional Resources · कानूनी तथा संवैधानिक स्रोतहरू</div>
+  <div class="section-title">Legal &amp; Constitutional Resources · कानूनी तथा संवैधानिक स्रोतहरू <a href="https://github.com/ShivaPrasadAcharya/link2/edit/main/index.html" class="edit-icon" title="Edit this page">✏️</a></div>
   <div class="card-grid" id="cardGrid"></div>
   <div class="no-results" id="noResults">No matching resources found · कुनै मिल्दो स्रोत भेटिएन</div>
 </main>
