@@ -500,7 +500,7 @@
 const LINKS = [
   {
     url:      "https://shivaprasadacharya.github.io/link2/",
-    title:    "LINK2",
+    title:    "Editable LINK2",
     editUrl:  "https://github.com/ShivaPrasadAcharya/link2/edit/main/index.html",
     description: "link2 हरू edit गर्नुहोस, Use Esc for search skip"
   },
@@ -589,7 +589,7 @@ LINKS.forEach((item, i) => {
   card.innerHTML = `
     <div class="card-header">
       <a class="card-title-link" href="${item.url}" target="_blank" rel="noopener">${escHtml(item.title)}</a>
-      <a class="edit-link" href="${item.editUrl}" target="_blank" rel="noopener">✎ edit</a>
+      <a class="edit-link" href="${item.editUrl}" target="_blank" rel="noopener">✏️ </a>
     </div>
     <div class="card-desc">${escHtml(item.description)}</div>
     <div class="card-url">${escHtml(item.url)}</div>
