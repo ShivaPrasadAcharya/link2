@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Background -->
+  <rect width="64" height="64" fill="#c9a84c" rx="8"/>
+  
+  <!-- Scale/Balance (legal symbol) -->
+  <g transform="translate(32, 24)">
+    <!-- Pillar -->
+    <rect x="-2" y="4" width="4" height="16" fill="#080c12"/>
+    <!-- Left pan -->
+    <rect x="-14" y="4" width="12" height="4" fill="#080c12"/>
+    <!-- Right pan -->
+    <rect x="2" y="6" width="12" height="4" fill="#080c12"/>
+    <!-- Left chain -->
+    <line x1="-8" y1="4" x2="-8" y2="-4" stroke="#080c12" stroke-width="1.5"/>
+    <!-- Right chain -->
+    <line x1="8" y1="6" x2="8" y2="-2" stroke="#080c12" stroke-width="1.5"/>
+    <!-- Top beam -->
+    <rect x="-10" y="-6" width="20" height="2.5" fill="#080c12" rx="1"/>
+  </g>
+</svg>
