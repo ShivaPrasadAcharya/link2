@@ -473,7 +473,7 @@
           <button class="nav-btn" id="nextBtn" title="Next match (Enter)" disabled>▼</button>
         </div>
         <label class="norm-label" id="normLabel"
-               title="Nepali normalized search — handles vowel/sibilant/nasal variants">
+               title="Nepali normalized, space-agnostic search — handles vowel/sibilant/nasal variants (श/ष, ी/ी, ऋ/रि/री) and ignores spacing differences">
           <input type="checkbox" id="normCheck" />
           नेपाली Normalize
         </label>
@@ -609,36 +609,88 @@ const LINKS = [
   }
 ];
 
-// ── NEPALI NORMALIZER ─────────────────────────────────────────────────────
+// ── NEPALI NORMALIZER (upgraded: रि/री/ऋ unification + space-agnostic search) ─
 const NepaliNormalizer = {
-  vowelMap:    { 'ी': 'ि', 'ू': 'ु' },
+  vowelMap: {
+    'ी': 'ि',
+    'ू': 'ु',
+    'ृ': 'ि',
+    'ऋ': 'रि',
+  },
   sibilantMap: { 'श': 'स', 'ष': 'स' },
   nasalMap:    { 'ङ': 'न', 'ण': 'न', 'ञ': 'न', 'ं': 'न्' },
   vaBaMap:     { 'व': 'ब' },
   numberMap:   { '०':'0','१':'1','२':'2','३':'3','४':'4','५':'5','६':'6','७':'7','८':'8','९':'9' },
-  normalize(text) {
-    if (!text) return '';
-    let n = text.normalize('NFC').replace(/\u200D/g,'').replace(/\u200C/g,'');
-    for (const [f,t] of Object.entries(this.vowelMap))    n = n.split(f).join(t);
-    for (const [f,t] of Object.entries(this.sibilantMap)) n = n.split(f).join(t);
-    for (const [f,t] of Object.entries(this.nasalMap))    n = n.split(f).join(t);
-    for (const [f,t] of Object.entries(this.vaBaMap))     n = n.split(f).join(t);
-    for (const [f,t] of Object.entries(this.numberMap))   n = n.split(f).join(t);
-    return n;
+
+  _isDropped(ch, ignoreSpaces) {
+    if (ch === '\u200D' || ch === '\u200C') return true;
+    if (ignoreSpaces && /\s/.test(ch)) return true;
+    return false;
   },
-  isDevanagari(text) { return /[\u0900-\u097F]/.test(text); },
-  mapToOriginal(normPos, original, normalized) {
-    if (normPos <= 0) return 0;
-    if (normPos >= normalized.length) return original.length;
-    let origIdx = 0, normIdx = 0;
-    while (normIdx < normPos && origIdx < original.length) {
-      if (original[origIdx] === '\u200D' || original[origIdx] === '\u200C') { origIdx++; continue; }
-      origIdx++; normIdx++;
+
+  _transformChar(ch) {
+    let s = ch;
+    for (const [f, t] of Object.entries(this.vowelMap))    if (s === f) s = t;
+    for (const [f, t] of Object.entries(this.sibilantMap)) if (s === f) s = t;
+    for (const [f, t] of Object.entries(this.nasalMap))    if (s === f) s = t;
+    for (const [f, t] of Object.entries(this.vaBaMap))     if (s === f) s = t;
+    for (const [f, t] of Object.entries(this.numberMap))   if (s === f) s = t;
+    return s;
+  },
+
+  normalize(text, opts = {}) {
+    if (!text) return '';
+    return this._normalizeWithMap(text, opts).text;
+  },
+
+  _normalizeWithMap(text, opts = {}) {
+    const ignoreSpaces = !!opts.ignoreSpaces;
+    const src = text.normalize('NFC');
+    let out = '';
+    const indexMap = [];
+    for (let i = 0; i < src.length; i++) {
+      const ch = src[i];
+      if (this._isDropped(ch, ignoreSpaces)) continue;
+      const mapped = this._transformChar(ch);
+      for (const outCh of mapped) {
+        out += outCh;
+        indexMap.push(i);
+      }
     }
-    while (origIdx < original.length &&
-           (original[origIdx] === '\u200D' || original[origIdx] === '\u200C')) origIdx++;
-    return origIdx;
-  }
+    return { text: out, indexMap };
+  },
+
+  isDevanagari(text) { return /[\u0900-\u097F]/.test(text); },
+
+  mapToOriginal(normPos, original, normalized, opts = {}) {
+    const { indexMap } = this._normalizeWithMap(original, opts);
+    if (normPos <= 0) return 0;
+    if (normPos >= indexMap.length) return original.length;
+    return indexMap[normPos];
+  },
+
+  search(query, text) {
+    if (!query || !text) return [];
+    const normQuery = this._normalizeWithMap(query, { ignoreSpaces: true }).text;
+    const { text: normText, indexMap } = this._normalizeWithMap(text, { ignoreSpaces: true });
+    if (!normQuery) return [];
+
+    const matches = [];
+    let fromIndex = 0;
+    while (fromIndex <= normText.length) {
+      const idx = normText.indexOf(normQuery, fromIndex);
+      if (idx === -1) break;
+      const startOrig = indexMap[idx];
+      const endOrig   = indexMap[idx + normQuery.length - 1] + 1;
+      matches.push({ start: startOrig, end: endOrig });
+      fromIndex = idx + 1;
+    }
+    return matches;
+  },
+
+  matches(query, text) {
+    return this.search(query, text).length > 0;
+  },
 };
 
 // ── THEME TOGGLE ──────────────────────────────────────────────────────────
@@ -711,15 +763,21 @@ function doSearch() {
 
   if (!raw.trim()) { updateUI(); return; }
 
+  // Normalize mode also ignores spacing differences (e.g. "नेपाल भाषा"
+  // matches "नेपालभाषा"); plain mode matches literally, spaces included.
   const query = useNorm
-    ? NepaliNormalizer.normalize(raw.toLowerCase())
+    ? NepaliNormalizer.normalize(raw.toLowerCase(), { ignoreSpaces: true })
     : raw.toLowerCase();
+
+  if (!query) { updateUI(); return; }
 
   let totalVisible = 0;
 
   cardEls.forEach(({ card, fields, origText }) => {
     const combined     = Object.values(origText).join(' ').toLowerCase();
-    const combinedNorm = useNorm ? NepaliNormalizer.normalize(combined) : combined;
+    const combinedNorm = useNorm
+      ? NepaliNormalizer.normalize(combined, { ignoreSpaces: true })
+      : combined;
 
     if (!combinedNorm.includes(query)) {
       card.classList.add('hidden');
@@ -742,28 +800,42 @@ function doSearch() {
   updateUI();
 }
 
-function buildHighlights(original, normQuery, useNorm) {
-  if (!normQuery) return escHtml(original);
+function buildHighlights(original, query, useNorm) {
+  if (!query) return escHtml(original);
 
-  const normalized = useNorm
-    ? NepaliNormalizer.normalize(original.toLowerCase())
-    : original.toLowerCase();
-  const qLen = normQuery.length;
-  let result = '', searchPos = 0, origPos = 0;
+  // Plain mode: literal, space-sensitive match — indices line up 1:1.
+  if (!useNorm) {
+    const lower = original.toLowerCase();
+    let result = '', pos = 0, searchPos = 0;
+    while (true) {
+      const idx = lower.indexOf(query, searchPos);
+      if (idx === -1) break;
+      result += escHtml(original.slice(pos, idx));
+      result += `<mark class="hl">${escHtml(original.slice(idx, idx + query.length))}</mark>`;
+      pos = idx + query.length;
+      searchPos = pos;
+    }
+    result += escHtml(original.slice(pos));
+    return result;
+  }
 
-  while (searchPos <= normalized.length - qLen) {
-    const idx = normalized.indexOf(normQuery, searchPos);
+  // Normalize mode: use the exact index map (handles dropped spaces and
+  // expanding chars like ऋ → रि) so highlights land on the right original chars.
+  const { text: normalized, indexMap } =
+    NepaliNormalizer._normalizeWithMap(original.toLowerCase(), { ignoreSpaces: true });
+
+  let result = '', origPos = 0, searchPos = 0;
+  while (searchPos <= normalized.length - query.length) {
+    const idx = normalized.indexOf(query, searchPos);
     if (idx === -1) break;
 
-    const origStart = useNorm
-      ? NepaliNormalizer.mapToOriginal(idx, original, normalized) : idx;
-    const origEnd = useNorm
-      ? NepaliNormalizer.mapToOriginal(idx + qLen, original, normalized) : idx + qLen;
+    const origStart = indexMap[idx];
+    const origEnd   = indexMap[idx + query.length - 1] + 1;
 
     result += escHtml(original.slice(origPos, origStart));
     result += `<mark class="hl">${escHtml(original.slice(origStart, origEnd))}</mark>`;
     origPos   = origEnd;
-    searchPos = idx + qLen;
+    searchPos = idx + query.length;
   }
   result += escHtml(original.slice(origPos));
   return result;
