@@ -609,37 +609,96 @@ const LINKS = [
   }
 ];
 
-// ── NEPALI NORMALIZER ─────────────────────────────────────────────────────
 const NepaliNormalizer = {
-  vowelMap:    { 'ी': 'ि', 'ू': 'ु' },
+  vowelMap: {
+    'ी': 'ि',
+    'ू': 'ु',
+    'ृ': 'ि',
+    'ऋ': 'रि',
+  },
   sibilantMap: { 'श': 'स', 'ष': 'स' },
   nasalMap:    { 'ङ': 'न', 'ण': 'न', 'ञ': 'न', 'ं': 'न्' },
   vaBaMap:     { 'व': 'ब' },
   numberMap:   { '०':'0','१':'1','२':'2','३':'3','४':'4','५':'5','६':'6','७':'7','८':'8','९':'9' },
-  normalize(text) {
-    if (!text) return '';
-    let n = text.normalize('NFC').replace(/\u200D/g,'').replace(/\u200C/g,'');
-    for (const [f,t] of Object.entries(this.vowelMap))    n = n.split(f).join(t);
-    for (const [f,t] of Object.entries(this.sibilantMap)) n = n.split(f).join(t);
-    for (const [f,t] of Object.entries(this.nasalMap))    n = n.split(f).join(t);
-    for (const [f,t] of Object.entries(this.vaBaMap))     n = n.split(f).join(t);
-    for (const [f,t] of Object.entries(this.numberMap))   n = n.split(f).join(t);
-    return n;
+
+  _isDropped(ch, ignoreSpaces) {
+    if (ch === '\u200D' || ch === '\u200C') return true;
+    if (ignoreSpaces && /\s/.test(ch)) return true;
+    return false;
   },
-  isDevanagari(text) { return /[\u0900-\u097F]/.test(text); },
-  mapToOriginal(normPos, original, normalized) {
-    if (normPos <= 0) return 0;
-    if (normPos >= normalized.length) return original.length;
-    let origIdx = 0, normIdx = 0;
-    while (normIdx < normPos && origIdx < original.length) {
-      if (original[origIdx] === '\u200D' || original[origIdx] === '\u200C') { origIdx++; continue; }
-      origIdx++; normIdx++;
+
+  _transformChar(ch) {
+    let s = ch;
+    for (const [f, t] of Object.entries(this.vowelMap))    if (s === f) s = t;
+    for (const [f, t] of Object.entries(this.sibilantMap)) if (s === f) s = t;
+    for (const [f, t] of Object.entries(this.nasalMap))    if (s === f) s = t;
+    for (const [f, t] of Object.entries(this.vaBaMap))     if (s === f) s = t;
+    for (const [f, t] of Object.entries(this.numberMap))   if (s === f) s = t;
+    return s;
+  },
+
+  normalize(text, opts = {}) {
+    if (!text) return '';
+    const { text: normalized } = this._normalizeWithMap(text, opts);
+    return normalized;
+  },
+
+  _normalizeWithMap(text, opts = {}) {
+    const ignoreSpaces = !!opts.ignoreSpaces;
+    const src = text.normalize('NFC');
+    let out = '';
+    const indexMap = [];
+    for (let i = 0; i < src.length; i++) {
+      const ch = src[i];
+      if (this._isDropped(ch, ignoreSpaces)) continue;
+      const mapped = this._transformChar(ch);
+      for (const outCh of mapped) {
+        out += outCh;
+        indexMap.push(i);
+      }
     }
-    while (origIdx < original.length &&
-           (original[origIdx] === '\u200D' || original[origIdx] === '\u200C')) origIdx++;
-    return origIdx;
-  }
+    return { text: out, indexMap };
+  },
+
+  isDevanagari(text) { return /[\u0900-\u097F]/.test(text); },
+
+  mapToOriginal(normPos, original, normalized) {
+    const { indexMap } = this._normalizeWithMap(original);
+    if (normPos <= 0) return 0;
+    if (normPos >= indexMap.length) return original.length;
+    return indexMap[normPos];
+  },
+
+  search(query, text) {
+    if (!query || !text) return [];
+
+    const { text: normQuery } = this._normalizeWithMap(query, { ignoreSpaces: true });
+    const { text: normText, indexMap } = this._normalizeWithMap(text, { ignoreSpaces: true });
+
+    if (!normQuery) return [];
+
+    const matches = [];
+    let fromIndex = 0;
+    while (fromIndex <= normText.length) {
+      const idx = normText.indexOf(normQuery, fromIndex);
+      if (idx === -1) break;
+
+      const startOrig = indexMap[idx];
+      const lastNormIdx = idx + normQuery.length - 1;
+      const endOrig = indexMap[lastNormIdx] + 1;
+
+      matches.push({ start: startOrig, end: endOrig });
+      fromIndex = idx + 1;
+    }
+    return matches;
+  },
+
+  matches(query, text) {
+    return this.search(query, text).length > 0;
+  },
 };
+
+export default NepaliNormalizer;
 
 // ── THEME TOGGLE ──────────────────────────────────────────────────────────
 const html      = document.documentElement;
